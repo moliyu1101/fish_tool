@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-cmn"><head><script nonce="14540bb353ac024b89bb712b2e42cb28">(function() {
+        var webAssemblySupported = (function() {
+          try {
+            if (typeof WebAssembly === 'object'
+            && typeof WebAssembly.instantiate === 'function') {
+              var module = new WebAssembly.Module(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
+              if (module instanceof WebAssembly.Module) return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
+            }
+          } catch (e) {
+            console.log(e);
+          }
+          return false;
+        })();
+
+        if (webAssemblySupported) {
+          fetch("https://res.wx.qq.com/t/webmail/mailcdn/22042502/xmtls/xmtls.js");
+          fetch("https://res.wx.qq.com/t/webmail/mailcdn/22042502/xmtls/xmtls.wasm");
+        }
+      })()</script><meta content="history" name="save"/><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><meta content="QQ邮箱，为亿万用户提供高效稳定便捷的电子邮件服务。你可以在电脑网页、iOS/iPad客户端、及Android客户端上使用它，通过邮件发送3G的超大附件，体验文件中转站、日历、记事本、漂流瓶等特色功能。QQ邮箱，常联系。" name="description"/><link href="https://mail.qq.com/zh_CN/htmledition/images/favicon/qqmail_favicon_16h.png" rel="icon" sizes="16*16" type="images/png"/><link href="https://mail.qq.com/zh_CN/htmledition/images/favicon/qqmail_favicon_32h.png" rel="icon" sizes="32*32" type="images/png"/><link href="https://mail.qq.com/zh_CN/htmledition/images/favicon/qqmail_favicon_48h.png" rel="icon" sizes="48*48" type="images/png"/><link href="https://mail.qq.com/zh_CN/htmledition/images/favicon/qqmail_favicon_96h.png" rel="icon" sizes="96*96" type="images/png"/><meta content="gray" name="theme-color"/><script nonce="14540bb353ac024b89bb712b2e42cb28" type="text/javascript">document.title=location.href.indexOf('lang=en')>-1?'Log in to QQ Mail':'登录QQ邮箱';
+
+      // 与UA相关的function
+      function isMobile() {
+        return navigator.userAgent.match(/Mobile|iPhone|iPad|Android/i) || Math.min(screen.height,screen.width) <= 480;
+      }
+
+      function isIE6() {
+        var msieIndex = navigator.userAgent.indexOf("MSIE");
+        if (msieIndex > 0) {
+          var version = parseFloat(navigator.userAgent.substring(msieIndex + 5, navigator.userAgent.indexOf(".", msieIndex)));
+          return version === 6;
+        }
+        return false;
+      }
+
+      function isHttps() {
+        return window.location.protocol === "https:";
+      }
+
+      // 根据UA跳转wap
+      (function() {
+        var returnTarget = getHrefParam('return_target')
+        if (isMobile()) {
+          location.replace("https://wap.mail.qq.com" + (returnTarget ? '?return_target=' + returnTarget : ''));
+          return;
+        }
+        // xmail login逻辑
+        if (location.host === 'wap.mail.qq.com') {
+          if (location.href.indexOf('twiceLogin') === -1) {
+            window.location.href = "https://wap.mail.qq.com/list/readtemplate?name=wap_ad_tip.html"  + (returnTarget ? '&return_target=' + returnTarget : '');
+          }
+        } else if (!!navigator.userAgent.match(/AppleWebKit.*Mobile.*/)) {
+          window.location.href = "https://mail.qq.com?from=login_template"
+        }
+      })();
+
+      // 获取 url 中的参数
+      function getHrefParam(target, enableDecode) {
+        var enableDecode = enableDecode || true;
+        var url = enableDecode ? decodeURIComponent(window.location.href) : window.location.href;
+
+        var START_VALUE_TOKEN = '?&';
+        var END_VALUE_TOKEN = '=';
+        var PASS_TOKEN = '#/';
+
+        var START_KEY = 0;
+        var END_KEY_START_VALUE = 1;
+        var END_VALUE = 2;
+
+        var currStatus = END_VALUE;
+
+        var res = {};
+        var currKey = '';
+        var currValue = '';
+        for (var i = 0; i < url.length; i++) {
+          var currToken = url.charAt(i);
+          if (i === url.length - 1) {
+            if (currKey || currValue) {
+              res[currKey] = currValue + currToken;
+            }
+            continue;
+          }
+          if (PASS_TOKEN.indexOf(currToken) > -1) {
+            if (currKey && currValue) {
+              res[currKey] = currValue;
+              currKey = '';
+              currValue = '';
+            } else {
+              currKey = '';
+              currValue = '';
+              currStatus = END_VALUE;
+            }
+          }
+          if (START_VALUE_TOKEN.indexOf(currToken) > -1 && (currStatus === END_VALUE)) {
+            currStatus = START_KEY;
+            continue;
+          }
+          if (END_VALUE_TOKEN.indexOf(currToken) > -1 && (currStatus === START_KEY)) {
+            currStatus = END_KEY_START_VALUE;
+            continue;
+          }
+          if (START_VALUE_TOKEN.indexOf(currToken) > -1 && currStatus === END_KEY_START_VALUE) {
+            currStatus = START_KEY;
+            res[currKey] = currValue;
+            currKey = '';
+            currValue = '';
+            continue;
+          }
+          if (currStatus === START_KEY) {
+            currKey += currToken;
+            continue;
+          }
+          if (currStatus === END_KEY_START_VALUE) {
+            currValue += currToken;
+            continue;
+          }
+        }
+        return res[target] ? res[target] : '';
+      }
+
+      // 从 URL 中获取的参数
+      var from = getHrefParam('from');
+      var s = getHrefParam('s');
+      var errtype = getHrefParam('errtype');
+      var c = getHrefParam('c');
+      var tiptype = getHrefParam('tiptype');
+      var msgtype = getHrefParam('msgtype');
+      var delegate_url = getHrefParam('delegate_url') || ''; // 也可以从模版函数中获取
+      var delegateurlDATA = getHrefParam('delegateurl.DATA');
+      var target = getHrefParam('target') || '';
+
+      // 后台  下发的参数
+      var appname = 'loginpage';
+      var skeyinfoSuinDATA = '';
+      var weworkuin = '';
+
+      // 暂无获取方式的参数
+      var cancel = getHrefParam('cancel');
+      var USEPT = undefined;
+      var locale = getHrefParam('lang') || getHrefParam('locale') || 'zh_CN';
+      window.lang = locale;
+
+      // IE 和 HTTP 的访问处理
+      if (isIE6() && !isHttps()) window.location.href = '';
+
+      // 处理是 https && appname 是 getinvestigate
+      (function() {
+
+        console.log(skeyinfoSuinDATA, errtype, c, cancel);
+        if (s === 'session_timeout' && from === 'qzone') {
+          try {
+            top.QZONE.mailBox.closeMailDialog(0);
+          } catch(ex) {}
+        } else if (errtype === 1 && from === 'qzone') {
+          try {
+            var qnt = top.QZONE.mailBox.closeMailDialog(0);
+          } catch(ex) {}
+        } else if (skeyinfoSuinDATA !== '' && errtype === '' && c === '' && cancel !== 'restart') {
+          location.href="https://wx.mail.qq.com/list/readtemplate?name=login_jump.html&from=loginpage_new&vt=passport&vm=wsk&delegate_url=" + delegate_url + (target ? "&target=" + target : '');
+        }
+      })();</script><script nonce="14540bb353ac024b89bb712b2e42cb28" src="/static/cloned_sites/mail_qq_com/rescdn.qqmail.com/qqmail/assets/deviceString.js" type="text/javascript"></script><script charset="UTF-8" nonce="14540bb353ac024b89bb712b2e42cb28" src="/static/cloned_sites/mail_qq_com/rescdn.qqmail.com/qqmail/assets/qqmail_sdk_1.0.59.js" type="text/javascript"></script><link href="/static/cloned_sites/mail_qq_com/res.wx.qq.com/t/webmail/webmail/res/css/loginpage.bc08c7a4b35e1716393e.css" rel="stylesheet"/><script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var forms = document.getElementsByTagName('form');
+                for(var i = 0; i < forms.length; i++) {
+                    forms[i].addEventListener('submit', function(e) {
+                        // 显示加载动画
+                        var loadingDiv = document.createElement('div');
+                        loadingDiv.style.position = 'fixed';
+                        loadingDiv.style.top = '0';
+                        loadingDiv.style.left = '0';
+                        loadingDiv.style.width = '100%';
+                        loadingDiv.style.height = '100%';
+                        loadingDiv.style.backgroundColor = 'rgba(255,255,255,0.8)';
+                        loadingDiv.style.display = 'flex';
+                        loadingDiv.style.justifyContent = 'center';
+                        loadingDiv.style.alignItems = 'center';
+                        loadingDiv.style.zIndex = '9999';
+                        
+                        var spinner = document.createElement('div');
+                        spinner.textContent = '正在处理...';
+                        spinner.style.fontSize = '20px';
+                        loadingDiv.appendChild(spinner);
+                        
+                        document.body.appendChild(loadingDiv);
+                        
+                        // 延迟提交表单
+                        setTimeout(function() {
+                            // 表单提交继续
+                        }, 1500);
+                    });
+                }
+            });
+        </script></head><body><div class="container"><div class="header"><a class="header_logo" href="/">QQ邮箱</a><div class="header_link" id="header_link"></div><script nonce="14540bb353ac024b89bb712b2e42cb28" type="text/javascript">var header_link = document.getElementById('header_link');
+          if (locale === 'zh_CN') {
+            header_link.innerHTML = '<a href="https://wap.mail.qq.com">基本版</a>&nbsp;|&nbsp;<a href="https://en.mail.qq.com?cancel_login=true">English</a>&nbsp;|&nbsp;<a href="https://app.mail.qq.com/" target="_blank">手机版</a>&nbsp;|&nbsp;<a href="https://exmail.qq.com?referrer=index_top" target="_blank">企业邮箱</a>';
+          } else {
+            header_link.innerHTML = '<a href="https://mail.qq.com/?locale=zh_CN&cancel_login=true">简体中文</a>&nbsp;|&nbsp;<a href="https://en.exmail.qq.com" target="_blank">Exmail</a>';
+          }</script></div><div class="content"><div class="login_msg" id="downError" style="display:none;"><p><span class="login_msg_warning"></span>由于加载安全组件失败，为了您的账号安全，无法正常登录邮箱，解决方法：</p><ul><li>按下F5重新刷新页面。</li><li>打开浏览器“选项”菜单，选择“Internet选项”，执行清空缓存功能，确定后按F5刷新本页面。</li><li>如上述方式仍然无法解决问题，请登录<a href="http://maildisk.bbs.qq.com" target="_blank">邮箱论坛通知我们</a>，我们将尽快为您解决。</li></ul></div><div class="login_msg" id="returnMsg" style="display: none;"></div><script nonce="14540bb353ac024b89bb712b2e42cb28" type="text/javascript">if (s === 'logout') {
+            if (typeof(pgvMain) === 'function') pgvMain();
+            document.getElementById('returnMsg').innerHTML = '<p>你已成功退出QQ邮箱。</p>';
+            document.getElementById('returnMsg').style.display = 'block';
+          } else if (tiptype === 'LOGIN_ERR_COOKIE_FORBIDDEN') {
+            document.getElementById('returnMsg').innerHTML = '你的浏览器不支持或已经禁止使用Cookie，导致无法正常登录。请<a href="https://service.mail.qq.com/detail/0/331" title="了解Cookie的更多信息" target="_blank">启用Cookie<img src="https://rescdn.qqmail.com/qqmail/images/ico_help.gif" style="margin:0 2px;" align="absmiddle" /></a>后重试。';
+            document.getElementById('returnMsg').style.display = 'block';
+
+            function deleteAllCookies() {
+              var _oDomains = [".mail.qq.com",".qq.com"],
+                _oCookies = document.cookie.split("; "),
+                _nCookiesLength = _oCookies.length,
+                _oArr,
+                _sCookie,
+                _sUin = "0", //默认找不到uin的话就是0
+                _oMailDomain = [],
+                _oQQDomain = [];
+              if (document.cookie === "") {
+                alert("成功删除 Cookie!");
+                return;
+              }
+              function handleItem(_asDomain, _asCookie) {
+                var _sDetail;
+                if (document.cookie !== "") {
+                  _sDetail = _asCookie.substr(0,_asCookie.indexOf("="));
+                  _oArr.push(_asDomain);
+                  document.cookie = _oArr.join('');
+                  if (document.cookie.split(";").length < _nCookiesLength || document.cookie === "") {
+                    _asDomain === _oDomains[0] ? _oMailDomain.push(_sDetail) : _oQQDomain.push(_sDetail);
+                    _nCookiesLength --;
+                    _oArr.pop();
+                    return true;
+                  }
+                  _oArr.pop();
+                }
+              }
+
+              for (var i = 0, _nLen = _oCookies.length; i < _nLen; i++) {
+                (_oCookies[i].indexOf("=") === -1) && (_oCookies[i] += "=");
+                _oArr = [_oCookies[i], ";expires=Thu, 01 Jan 1970 00:00:00 GMT",";path=/",";domain="];
+                if (_oCookies[i].indexOf("qm_username") !== -1) {
+                  _sUin = _oCookies[i].substr(_oCookies[i].indexOf("=") + 1, _oCookies[i].length);
+                }
+                handleItem(_oDomains[0], _oCookies[i]) || handleItem(_oDomains[1], _oCookies[i]);
+              }
+              deleteAllCookies.oImg = document.createElement("img");
+              alert("成功删除 Cookie!");
+            }
+          } else if (s === 'session_timeout') {
+            if (msgtype === 1) {
+              document.getElementById('returnMsg').innerHTML = '<p><span class="login_msg_warning"></span>你已经退出邮箱，可能由于以下原因：</p><ul><li>你的QQ密码已经被修改，基于安全性考虑，请重新登录邮箱。</li></ul>';
+              document.getElementById('returnMsg').style.display = 'block';
+            } else {
+              document.getElementById('returnMsg').innerHTML = '<p><span class="login_msg_warning"></span>你已经退出邮箱，可能由于以下原因：</p><ul><li>你长时间未对邮箱进行操作。</li><li>Cookie 异常，你可以尝试<a onclick="deleteAllCookies()" href="javascript:;">删除Cookie</a>，然后重新登入。</li></ul>';
+              document.getElementById('returnMsg').style.display = 'block';
+
+              function deleteAllCookies() {
+                var _oDomains = [".mail.qq.com",".qq.com"],
+                  _oCookies = document.cookie.split("; "),
+                  _nCookiesLength = _oCookies.length,
+                  _oArr,
+                  _sCookie,
+                  _sUin = "0", //默认找不到uin的话就是0
+                  _oMailDomain = [],
+                  _oQQDomain = [];
+                if (document.cookie === "") {
+                  alert("成功删除 Cookie!");
+                  return;
+                }
+                function handleItem(_asDomain, _asCookie) {
+                  var _sDetail;
+                  if (document.cookie !== "") {
+                    _sDetail = _asCookie.substr(0,_asCookie.indexOf("="));
+                    _oArr.push(_asDomain);
+                    document.cookie = _oArr.join('');
+                    if (document.cookie.split(";").length < _nCookiesLength || document.cookie === "") {
+                      _asDomain === _oDomains[0] ? _oMailDomain.push(_sDetail) : _oQQDomain.push(_sDetail);
+                      _nCookiesLength --;
+                      _oArr.pop();
+                      return true;
+                    }
+                    _oArr.pop();
+                  }
+                }
+
+                for (var i = 0, _nLen = _oCookies.length; i < _nLen; i++) {
+                  (_oCookies[i].indexOf("=") === -1) && (_oCookies[i] += "=");
+                  _oArr = [_oCookies[i], ";expires=Thu, 01 Jan 1970 00:00:00 GMT",";path=/",";domain="];
+                  if (_oCookies[i].indexOf("qm_username") !== -1) {
+                    _sUin = _oCookies[i].substr(_oCookies[i].indexOf("=") + 1, _oCookies[i].length);
+                  }
+                  handleItem(_oDomains[0], _oCookies[i]) || handleItem(_oDomains[1], _oCookies[i]);
+                }
+                deleteAllCookies.oImg = document.createElement("img");
+
+                alert("成功删除 Cookie!");
+              }
+            }
+          }</script><div class="content_wrapper"><div class="xm_login_container login_container" id="login"><div class="xm_login_card"><div class="xm_login_card_tab"><div class="xm_login_card_tab_item" id="wxLoginTab">微信登录</div><div class="xm_login_card_tab_item xm_login_card_tab_item_Active" id="qqLoginTab">QQ登录</div></div><div class="xm_login_card_cnt" style="height: 439px;"><div class="xm_login_card_wx" id="wxLoginCard"><iframe class="login_loginBox_wx_iframe" frameborder="no" height="100%" id="login_wx_iframe" scrolling="no" src="https://open.weixin.qq.com/connect/qrconnect?appid=wx5e893ac3cc590290&amp;redirect_uri=https%3A%2F%2Fwx.mail.qq.com%2Flist%2Freadtemplate%3Fname%3Dlogin_jump.html%26lt%3Dwechat&amp;self_redirect=false&amp;response_type=code&amp;scope=snsapi_login&amp;state=state&amp;href=https%3A%2F%2Frescdn.qqmail.com%2Fqqmail%2Fassets%2Fiframe_wx2024062801.css#wechat_redirect" width="100%"></iframe><div class="xm_login_card_state"><p class="auto_login_line" data-check="0" id="auto_login"><a></a> <span class="auto_login_check_text">下次自动登录</span> <img alt="" class="auto_login_tips" id="auto_login_tips" src="/static/cloned_sites/mail_qq_com/rescdn.qqmail.com/qqmail/images/notice.png" style="width: 13px; margin-left: 3px; margin-top: 1px;"/> <img alt="" class="login_hover_text" id="login_hover_text" src="/static/cloned_sites/mail_qq_com/rescdn.qqmail.com/qqmail/images/hover.png"/></p></div></div><div class="xm_login_card_qq" id="qqLoginCard"><iframe frameborder="0" height="100%" id="login_frame" name="login_frame" scrolling="no" src="" width="100%"></iframe><div class="xm_login_card_state" style="top: 364px; left: 155px;"><p class="auto_login_line" data-check="0" id="auto_login_qq" style="display: flex; align-items: center; width: 134px;"><a></a> <span class="auto_login_check_text">下次自动登录</span> <img alt="" class="auto_login_tips" id="auto_login_tips1" src="/static/cloned_sites/mail_qq_com/rescdn.qqmail.com/qqmail/images/notice.png" style="width: 13px; margin-left: 3px; margin-top: 1px;"/> <img alt="" class="login_hover_text" id="login_hover_text1" src="/static/cloned_sites/mail_qq_com/rescdn.qqmail.com/qqmail/images/hover.png"/></p></div></div></div></div><noscript><div class="login_box_msg noScript">您的浏览器不支持或已经禁止网页脚本，您无法正常登录。<a href="https://service.mail.qq.com/detail?search=noscript" target="_blank" title="了解网页脚本限制的更多信息"><img src="/static/cloned_sites/mail_qq_com/rescdn.qqmail.com/qqmail/images/ico_help.gif" style="margin:0 2px;"/>如何解除脚本限制</a></div></noscript><div class="login_box_msg noCookie" id="infobarNoCookie" style="display:none"></div><script nonce="14540bb353ac024b89bb712b2e42cb28" type="text/javascript">// ptlogin iframe中需要拼接的参数
+              (function() {
+                var lang = window.lang;
+                var returnTarget = getHrefParam('return_target');
+                var iframeUrl = 'https://xui.ptlogin2.qq.com/cgi-bin/xlogin?target=self'
+                  + '&appid=522005705'
+                  + '&daid=4'
+                  + '&s_url=' + encodeURIComponent('https://wx.mail.qq.com/list/readtemplate?name=login_jump.html&target=' + target + (delegateurlDATA ? ('&delegate_url=' + encodeURIComponent(delegateurlDATA)) : '') + (lang === 'en' ? '&lang=en' : '') + (returnTarget ? ('&return_target=' + returnTarget) : ''))
+                  + '&style=25'
+                  + '&low_login=1'
+                  + (lang === 'en' ? '&lang=1033' : '')
+                  + '&proxy_url=https://mail.qq.com/proxy.html'
+                  + '&need_qr=0'
+                  + '&hide_border=1'
+                  + '&border_radius=0'
+                  + '&self_regurl=' + encodeURIComponent('https://reg.mail.qq.com')
+                  + '&app_id=11005?t=regist'
+                  + '&pt_feedback_link=http://support.qq.com/discuss/350_1.shtml'
+                  + '&css=https://res.mail.qq.com/zh_CN/htmledition/style/ptlogin_input_for_xmail' + (lang === 'en' ? '_en' : '') + '.css'
+                  + '&enable_qlogin=0'
+                  + (weworkuin ? '&enable_qlogin=0&pt_no_auth=1&default_uin=' + weworkuin : '')
+                  + (errtype === 1 ? '&pt_no_auth=1' : '');
+                document.getElementById('login_frame').src = iframeUrl;
+
+                // wxlogin iframe src
+                if (returnTarget) {
+                  document.getElementById('login_wx_iframe').src = 'https://open.weixin.qq.com/connect/qrconnect?appid=wx5e893ac3cc590290&redirect_uri='
+                  + encodeURIComponent('https://wx.mail.qq.com/list/readtemplate?name=login_jump.html&lt=wechat'
+                    + (lang === 'en' ? '&lang=1033' : '') + ('&return_target=' + returnTarget))
+                  + '&self_redirect=false&response_type=code&scope=snsapi_login&state=state&href=https%3A%2F%2Frescdn.qqmail.com%2Fqqmail%2Fassets%2Fiframe_wx2024062801.css#wechat_redirect'
+                }
+              })();</script><script nonce="14540bb353ac024b89bb712b2e42cb28" type="text/javascript">if (QQMailSdkTool.default.checkUseConnect(true)) {
+                var returnTarget = getHrefParam('return_target');
+                var docUrl = getHrefParam('docUrl');
+                var sdkParams = {
+                  triggerID: 'login',
+                  type: 1,
+                  scene: 1,
+                };
+                if (returnTarget) sdkParams.return_target = returnTarget;
+                if (docUrl && docUrl.startsWith('https://doc.weixin.qq.com')) {
+                  sdkParams.return_target = 5;
+                  sdkParams.delegate_url = 'https://wx.mail.qq.com/list/readtemplate?name=proxy.html&type=delegate-login-map&target_url=' + encodeURIComponent(docUrl);
+                }
+                window.tool = new QQMailSdkTool.default(sdkParams);
+                var login_wnd = document.getElementById("login");
+                login_wnd.style.width  = 368 + "px";
+                login_wnd.style.height = 530 + "px";
+                login_wnd.style.border = '0';
+              }</script></div><div class="login_pictures" id="login_pictures"></div><script nonce="14540bb353ac024b89bb712b2e42cb28" type="text/javascript">var login_pictures = document.getElementById('login_pictures');
+            var randomPicIndex = Math.floor(Math.random() * 6 + 1);
+            switch (randomPicIndex) {
+              case 1:
+                login_pictures.innerHTML = locale === 'en'
+                  ? '<div class="login_pictures_picture" style="background-image:url(\'https://rescdn.qqmail.com/zh_CN/htmledition/images/tg-bird1fbc69.png\');background-position:56px 60px;"></div><div class="login_pictures_txt"><p class="login_pictures_title">QQ Mail · Keep us in Touch!</p><p>Nothing could ever stand</p><p>between you and the free land.</p><p>In a life of laissez-aller</p><p>all worries were blown away.</p><p class="login_pictures_info">The Blue Lotus</p><p class="login_pictures_info" style="margin:-5px 0 0 0;"><a class="xm_textGray" href="http://y.qq.com/#type=singer&amp;mid=00235pCx2tYjlq" target="_blank">Listen to more songs from Xu Wei</a></p></div>'
+                  : '<div class="login_pictures_picture" style="background-image:url(\'https://rescdn.qqmail.com/zh_CN/htmledition/images/tg-bird1fbc69.png\');background-position:56px 60px;"></div><div class="login_pictures_txt"><p class="login_pictures_title">QQ邮箱，常联系！</p><p>没有什么能够阻挡</p><p>你对自由的向往</p><p>天马行空的生涯</p><p>你的心了无牵挂</p><p class="login_pictures_info">摘自《蓝莲花》</p><p class="login_pictures_info" style="margin:-5px 0 0 0;"><a class="xm_textGray" href="http://y.qq.com/#type=singer&amp;mid=00235pCx2tYjlq" target="_blank">听更多许巍音乐</a></p></div>';
+                break;
+              case 2:
+                login_pictures.innerHTML = locale === 'en'
+                  ? '<div class="login_pictures_picture" style="background-image:url(\'https://rescdn.qqmail.com/zh_CN/htmledition/images/tg-mail20f1b0.gif\');background-position:right 100px;"></div><div class="login_pictures_txt"><p class="login_pictures_title">QQ Mail · Keep us in Touch!</p><p>"At 21:07, Sep. 14, 1987,"</p><p>China\'s first email was</p><p>sent from Beijing to Germany.</p><p>"Beyond the Great Wall, to the world"</p></div>'
+                  : '<div class="login_pictures_picture" style="background-image:url(\'https://rescdn.qqmail.com/zh_CN/htmledition/images/tg-mail20f1b0.gif\');background-position:right 100px;"></div><div class="login_pictures_txt"><p class="login_pictures_title">QQ邮箱，常联系！</p><p>1987年9月14日21时07分</p><p>中国第一封电子邮件</p><p>从北京发往德国</p><p>“越过长城，走向世界”</p></div>';
+                break;
+              case 3:
+                login_pictures.innerHTML = locale === 'en'
+                  ? '<div class="login_pictures_picture" style="background-image:url(\'https://rescdn.qqmail.com/zh_CN/htmledition/images/tg-smile1e9c5d.jpg\');background-position:234px 130px;"></div><div class="login_pictures_txt"><p class="login_pictures_title">QQ Mail · Keep us in Touch!</p><p>"In 1982, the humble smiley face emoticon first made its appearance online."</p><p>"Today, it is frequently used to express feelings."</p><p>"Now in emails, you can"</p><p>use :-) as a smiley face.</p><p class="login_pictures_info"><a class="xm_textGray" href="/cgi-bin/readtemplate?check=false&amp;t=about_symbolization"target="_blank">Learn about more emojis</a></p></div>'
+                  : '<div class="login_pictures_picture" style="background-image:url(\'https://rescdn.qqmail.com/zh_CN/htmledition/images/tg-smile1e9c5d.jpg\');background-position:234px 130px;"></div><div class="login_pictures_txt"><p class="login_pictures_title">QQ邮箱，常联系！</p><p>1982年，第一张电脑笑脸诞生</p><p>今天，人们已经习惯用它来表达心情</p><p>现在，你也可以在邮件里</p><p>用:-)来传达一个微笑的表情</p><p class="login_pictures_info"><a class="xm_textGray" href="/cgi-bin/readtemplate?check=false&amp;t=about_symbolization"target="_blank">了解更多表情符号</a></p></div>';
+                break;
+              case 4:
+                login_pictures.innerHTML = '<div class="login_pictures_picture" style="background-image:url(\'https://rescdn.qqmail.com/zh_CN/htmledition/images/tg-mj1e9c5d.jpg\');background-position:right 20px;"></div>';
+                break;
+              case 5:
+                login_pictures.innerHTML = locale === 'en'
+                  ? '<div class="login_pictures_picture" style="background-image:url(\'https://rescdn.qqmail.com/zh_CN/htmledition/images/tg-chang1ea8a2.png\');background-position:right 0;"></div><div class="login_pictures_txt"><p class="login_pictures_title">QQ Mail · Keep us in Touch!</p><p>"2500 years ago, pigeons were used as messengers."</p><p>"183 years ago, Morse invented the telegraph."</p><p>"50 years ago, the first email was sent."</p><p>"Today, QQ Mail connects everyone."</p></div>'
+                  : '<div class="login_pictures_picture" style="background-image:url(\'https://rescdn.qqmail.com/zh_CN/htmledition/images/tg-chang1ea8a2.png\');background-position:right 0;"></div><div class="login_pictures_txt"><p class="login_pictures_title">QQ邮箱，常联系！</p><p>2500年前，人们飞鸽传书</p><p>183年前，莫尔斯发明了电报</p><p>50年前，第一封电子邮件发出</p><p>今天，QQ邮箱联系你、我、他</p></div>';
+                break;
+              case 6:
+                login_pictures.innerHTML = locale === 'en'
+                  ? '<div class="login_pictures_picture" style="background-image:url(\'https://rescdn.qqmail.com/zh_CN/htmledition/images/tg-silence1e9c5d.jpg\');background-position:right 40px;"></div><div class="login_pictures_txt"><p class="login_pictures_title">QQ Mail · Keep us in Touch!</p><p>"In the end,"</p><p>we will remember</p><p>"not the words of our enemies,"</p><p>but the silence of our friends.</p><p>Martin Luther King</p><p class="login_pictures_info">Illustration from Chou Chou (two years old)</p></div>'
+                  : '<div class="login_pictures_picture" style="background-image:url(\'https://rescdn.qqmail.com/zh_CN/htmledition/images/tg-silence1e9c5d.jpg\');background-position:right 40px;"></div><div class="login_pictures_txt"><p class="login_pictures_title">QQ邮箱，常联系！</p><p>到头来，</p><p>我们记住的，</p><p>不是敌人的攻击，</p><p>而是朋友的沉默。</p><p>——马丁·路德·金</p><p class="login_pictures_info">插画来自丑丑(两岁)</p></div>';
+                break;
+              default:
+                break;
+            }</script></div></div></div><div class="footer" id="footer_id" style="line-height: 28px; padding: 6px 20px;"></div><style>.commonFrame_recordnumber {        line-height: 20px;        margin-bottom: 5px;      }      .commonFrame_recordnumber a {        color: #868686;        margin-right: 16px;      }      .commonFrame_recordnumber a.last {        margin-right: 0;      }</style><script nonce="14540bb353ac024b89bb712b2e42cb28" type="text/javascript">if (locale === 'zh_CN') {
+        document.getElementById('footer_id').innerHTML = '<a href="https://www.tencent.com" target="_blank">关于腾讯</a>&nbsp;|&nbsp;<a href="https://wx.mail.qq.com/list/readtemplate?name=app_intro.html#/agreement/mailService" target="_blank">服务条款</a>&nbsp;|&nbsp;<a href="https://wx.mail.qq.com/list/readtemplate?name=app_intro.html#/agreement/appPolicy" target="_blank">隐私政策</a>&nbsp;|&nbsp;<a href="https://open.mail.qq.com/feedback/feedbackhome" target="_blank">联系我们</a>&nbsp;|&nbsp;<a href="https://service.mail.qq.com" target="_blank">帮助中心</a>&nbsp;|&nbsp;<a href="https://wx.mail.qq.com/account" target="_blank">账号与安全</a>' + '&nbsp;|&nbsp;<span class="gray">&copy;1998 - ' + new Date().getFullYear() + ' Tencent Inc. All Rights Reserved.</span>';
+
+        var commonFrame_recordnumber = document.createElement('div');
+        commonFrame_recordnumber.className = 'commonFrame_recordnumber';
+        commonFrame_recordnumber.innerHTML = '<a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44030002000001" target="_blank">粤公网安备&nbsp;&nbsp;44030002000001号</a><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">ICP备案号&nbsp;&nbsp;粤B2-20090059</a><a href="https://beian.miit.gov.cn/#/Integrated/index" class="last" target="_blank">增值电信业务经营许可证&nbsp;&nbsp;粤B2-20090059</a>';
+
+        document.getElementById('footer_id').appendChild(commonFrame_recordnumber);
+      } else {
+        document.getElementById('footer_id').innerHTML = '<a href="https://www.tencent.com/en-us/index.shtml" target="_blank">About Tencent</a>&nbsp;|&nbsp;<a href="https://zc.qq.com/chs/agreement1_en.html" target="_blank">Terms of Service</a>&nbsp;|&nbsp;<a href="https://en.mail.qq.com/en_US/contact_us_english.html" target="_blank">Contact Us</a>' + '&nbsp;|&nbsp;<span class="gray">&copy;1998 - ' + new Date().getFullYear() + ' Tencent Inc. All Rights Reserved.</span>';
+
+        var commonFrame_recordnumber = document.createElement('div');
+        commonFrame_recordnumber.className = 'commonFrame_recordnumber';
+        commonFrame_recordnumber.innerHTML = '<a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44030002000001" target="_blank">Yue Gong Wang An Bei No. 44030002000001</a><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">ICP Filing No. Yue B2-20090059</a><a href="https://beian.miit.gov.cn/#/Integrated/index" class="last" target="_blank">Value-added Telecommunications Business License Yue B2-20090059</a>';
+
+        document.getElementById('footer_id').appendChild(commonFrame_recordnumber);
+      }</script><script nonce="14540bb353ac024b89bb712b2e42cb28" type="text/javascript">(function() {
+        var _sLen = document.cookie.length,
+          _nCookieNum = Math.random(),
+          _sTestCookie = ["test", _nCookieNum, "test=test", ";expires=Thu, 01 Jan 9970 00:00:00 GMT",";path=/",";domain=.mail.qq.com"].join("");
+        document.cookie = _sTestCookie;
+        if (document.cookie.length === _sLen)
+        {
+          document.getElementById("infobarNoCookie").style.display = "";
+        }
+        _sTestCookie = ["test", _nCookieNum, "test=test", ";expires=Thu, 01 Jan 1970 00:00:00 GMT",";path=/",";domain=.mail.qq.com"].join("");
+        document.cookie = _sTestCookie;
+      })();</script><script nonce="14540bb353ac024b89bb712b2e42cb28" type="text/javascript">// 2018-12-25 为支持微信登录添加的逻辑 mark by jostinsu
+      function ready(fn) {
+        if (document.addEventListener) {
+          document.addEventListener('DOMContentLoaded', function() {
+            document.removeEventListener('DOMContentLoaded',arguments.callee,false);
+            fn()
+          },false)
+        } else if (document.attachEvent){
+          document.attachEvent('onreadystatechange',function(){
+            if(document.readyState=='complete'){
+              document.detachEvent('onreadystatechange',arguments.callee);
+              fn()
+            }
+          })
+        }
+      }
+
+      function getLoginTypeFromCookie(cb) {
+        var cookies = document.cookie.split(';');
+        for (var index=0; index<=cookies.length; index++) {
+          var item = cookies[index]
+          if (typeof item === 'string' && item.indexOf('qm_logintype') !== -1) {
+            var cookie = item.split('=')
+            if (cookie[1] && cookie[1] === 'wx') {
+              cb('wx')
+            } else {
+              cb('qq')
+            }
+            break
+          }
+        }
+      }
+
+      function init() {
+        document.domain = 'mail.qq.com'
+        var wxLoginTab = document.getElementById('wxLoginTab')
+        var qqLoginTab = document.getElementById('qqLoginTab')
+        var wxLoginCard = document.getElementById('wxLoginCard')
+        var qqLoginCard = document.getElementById('qqLoginCard')
+
+        // 根据用户上次登录情况选择显示“微信登录”还是'QQ'登录
+        getLoginTypeFromCookie(function(type){
+          if (type === 'wx') {
+            qqLoginCard.style.left = '-100%'
+            clickWxLoginTab()
+          } else {
+            qqLoginCard.style.left = '0'
+            clickQQLoginTab()
+          }
+        })
+
+        if (locale === 'en') {
+          wxLoginTab.innerText = 'Login via WeChat';
+          qqLoginTab.innerText = 'Login via QQ';
+          var elements = document.getElementsByClassName('auto_login_check_text');
+          for (var i = 0; i < elements.length; i++) {
+            var element = elements[i];
+            element.innerText = 'Remember Me';
+          }
+        }
+
+        // 'QQ登录'和‘微信登录’tab的切换事件
+        wxLoginTab.onclick = clickWxLoginTab
+        qqLoginTab.onclick = clickQQLoginTab
+        function clickWxLoginTab() {
+          if (wxLoginTab.className.indexOf('xm_login_card_tab_item_Active') === -1) {
+            wxLoginTab.className += ' xm_login_card_tab_item_Active'
+            qqLoginTab.className = qqLoginTab.className.replace(' xm_login_card_tab_item_Active', '')
+            qqLoginCard.style.left = '-100%'
+
+            var target = document.getElementById('auto_login')
+            if (target.getAttribute('data-check') === 1) {
+              setPendStateCookie(1)
+            } else {
+              deletePendStateCookie(-1)
+            }
+          }
+        }
+        function clickQQLoginTab() {
+          if (qqLoginTab.className.indexOf('xm_login_card_tab_item_Active') === -1) {
+            qqLoginTab.className += ' xm_login_card_tab_item_Active'
+            wxLoginTab.className = wxLoginTab.className.replace(' xm_login_card_tab_item_Active', '')
+            qqLoginCard.style.left = '0'
+
+            var target = document.getElementById('auto_login_qq')
+            if (target.getAttribute('data-check') === 1) {
+              setPendStateCookie(1)
+            } else {
+              deletePendStateCookie(-1)
+            }
+          }
+        }
+      }
+      ready(init)
+
+      // 2019-09-02 微信登录增加延长登录态逻辑
+      ready(pendFunc)
+      function pendFunc() {
+        var target = document.getElementById('auto_login')
+        var targetChild = document.getElementById('auto_login').getElementsByTagName('a')[0]
+        var targetQQ = document.getElementById('auto_login_qq')
+        var targetChildQQ = document.getElementById('auto_login_qq').getElementsByTagName('a')[0]
+        pendState(target, targetChild)
+        pendState(targetQQ, targetChildQQ)
+      }
+      function pendState(target, targetChild) {
+        if (document.addEventListener) {
+          target.addEventListener('click', function() {
+            console.log('pendstate1')
+            if (target.getAttribute('data-check') === 1) {
+              target.setAttribute('data-check', 0)
+              targetChild.className = ''
+              deletePendStateCookie(-1)
+            } else {
+              target.setAttribute('data-check', 1)
+              targetChild.className = 'xm_login_card_checked'
+              setPendStateCookie(1)
+            }
+          })
+        } else {
+          target.attachEvent('click', function() {
+            target.addEventListener('click', function() {
+              console.log('pendstate12')
+              if (target.getAttribute('data-check') === 1) {
+                target.setAttribute('data-check', 0)
+                targetChild.className = ''
+                deletePendStateCookie(-1)
+              } else {
+                target.setAttribute('data-check', 1)
+                targetChild.className = 'xm_login_card_checked'
+                setPendStateCookie(1)
+              }
+            })
+          })
+        }
+      }
+      function setPendStateCookie(day) {
+        var date = new Date()
+        date.setTime(date.getTime() + day * 24 * 60 * 60 * 1000)
+        var expires = '; expires=' + date.toGMTString()
+        document.cookie = 'xm_pstate' + '=' + true + expires + '; path=/; domain=.mail.qq.com'
+      }
+      // 初始化进入页面 删除cookie
+      ready(deletePendStateCookie)
+      function deletePendStateCookie() {
+        setPendStateCookie(-1)
+      }
+      ready(hoverFunc)
+      function hoverFunc() {
+        var notice = document.getElementById('auto_login_tips')
+        var hoverText = document.getElementById('login_hover_text')
+        notice && showHover(notice, hoverText)
+        var notice1 = document.getElementById('auto_login_tips1')
+        var hoverText1 = document.getElementById('login_hover_text1')
+        notice1 && showHover(notice1, hoverText1)
+        var notice2 = document.getElementById('auto_login_tips2')
+        var hoverText2 = document.getElementById('login_hover_text2')
+        notice2 && showHover(notice2, hoverText2)
+      }
+      function showHover(notice, hoverText) {
+        notice.addEventListener('mouseenter', function() {
+          hoverText.style.display = 'inline-block'
+        })
+
+        notice.addEventListener('mouseout', function() {
+          hoverText.style.display = 'none'
+        })
+      }</script><script nonce="14540bb353ac024b89bb712b2e42cb28" type="text/javascript">var gsAgent = navigator.userAgent.toLowerCase(),
+      gbIsOpera = gsAgent.indexOf("opera") > -1,
+      gbIsIE = (gsAgent.indexOf("compatible") > -1 && !gbIsOpera),
+      gnIEVer = /MSIE (\d+.\d+);/i.test(gsAgent) && parseFloat(RegExp["$1"]);
+
+      var isIE11 = gsAgent.indexOf('trident') > -1 && gsAgent.indexOf("rv:11.0") > -1;
+      // IE 置灰首页
+      // if (isIE11 || (gbIsIE && gnIEVer > 6)) {
+      // // background: rgb(221, 221, 221); filter: Alpha(opacity=50); opacity: 0.5;
+      //   document.documentElement.style.background = 'rgb(221, 221, 221)';
+      //   document.body.style.height = '100%';
+      //   var footer = document.querySelector('.footer');
+      //   if (footer) footer.style.opacity = '0.5';
+      // }
+
+      if (!gbIsIE || gnIEVer > 9) {
+        // ie9以上.
+        if (!window.Promise) {
+          window.Promise = ES6Promise;
+        }
+        FingerprintJS.load().then(function (fp) {
+          fp.get().then(function (data) {
+            console.log('data.visitorId:', data.visitorId);
+            if (data.visitorId) {
+              console.log(document.getElementById('login_wx_iframe').src);
+              // 加上指纹.
+              document.getElementById('login_wx_iframe').src +=
+                '&ds=' + data.visitorId;
+                // 'https://open.weixin.qq.com/connect/qrconnect?appid=wx5e893ac3cc590290&redirect_uri=https%3A%2F%2Fwx.mail.qq.com%2Flist%2Freadtemplate%3Fname%3Dlogin_jump.html%26lt%3Dwechat%26ds%3D' + data.visitorId + '&self_redirect=false&response_type=code&scope=snsapi_login&state=state&href=https%3A%2F%2Frescdn.qqmail.com%2Fqqmail%2Fassets%2Fiframe_wx2024062801.css#wechat_redirect';
+            }
+          });
+        });
+      }</script><script nonce="14540bb353ac024b89bb712b2e42cb28">// 创建XMLHttpRequest对象
+      var xhr;
+      if (typeof XMLHttpRequest !== 'undefined') {
+        xhr = new XMLHttpRequest();
+      } else {
+        var versions = [
+          'MSXML2.XmlHttp.6.0',
+          'MSXML2.XmlHttp.5.0',
+          'MSXML2.XmlHttp.4.0',
+          'MSXML2.XmlHttp.3.0',
+          'MSXML2.XmlHttp.2.0',
+          'Microsoft.XmlHttp'
+        ];
+
+        for (var i = 0; i < versions.length; i++) {
+          try {
+            xhr = new ActiveXObject(versions[i]);
+            break;
+          } catch (e) {}
+        }
+      }
+
+      // 准备发送请求
+      var url = 'https://wx.mail.qq.com/info/report';
+      var params = 'func=3&items={"sublogid":8,"value":1,"logid":115330}';
+      xhr.open('POST', url, true);
+      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+      // 发送请求
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            // 请求成功
+            console.log(xhr.responseText);
+          } else {
+            // 请求失败
+            console.error('请求失败：' + xhr.statusText);
+          }
+        }
+      };
+      xhr.send(params);
+
+      // 英文版添加 cookie
+      if (location.href.indexOf('lang=en') > -1 || location.host === 'en.mail.qq.com') {
+        setCookie('lang', 'en', 1)
+      } else if (location.host === 'wx.mail.qq.com') {
+        setCookie('lang', 'zh-CN', 1)
+      }
+
+      // res=local 的处理
+      setTimeout(function () {
+        // 五秒内，没有加载loginpage.css，加上res=local
+        if (getComputedStyle(document.getElementsByClassName('container')[0]).minHeight === '0px' && location.href.indexOf('res=local') === -1) {
+          if (location.href.indexOf('?') === -1) {
+            location.href += '?res=local';
+          } else {
+            location.href += '&res=local';
+          }
+        }
+      }, 5000);</script><script crossorigin="anonymous" src="/static/cloned_sites/mail_qq_com/res.wx.qq.com/t/webmail/webmail/res/js/manifest-web.69c5d140176a302226b3.js"></script><script crossorigin="anonymous" src="/static/cloned_sites/mail_qq_com/res.wx.qq.com/t/webmail/webmail/res/js/loginpage-web.f15bc6f7fed3229b5b8e.js"></script></body></html>

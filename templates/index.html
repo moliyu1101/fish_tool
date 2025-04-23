@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网站镜像钓鱼工具 - 仅用于学习目的</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #0066cc;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .warning-box {
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            margin-top: 0;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0055aa;
+        }
+        .hidden {
+            display: none;
+        }
+        #result {
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 14px;
+        }
+        .nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .nav a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #0066cc;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>网站镜像钓鱼工具</h1>
+            <p>仅用于网络安全教育和技术研究</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="nav">
+            <a href="/">首页</a>
+            <a href="/captured">查看捕获数据</a>
+        </div>
+
+        <div class="warning-box">
+            <h3>警告</h3>
+            <p>本工具仅用于安全教育和技术研究，在未授权情况下使用此工具进行真实钓鱼攻击是违法行为，可能导致法律责任。</p>
+        </div>
+
+        <div class="card">
+            <h2>克隆网站</h2>
+            <p>输入目标网站URL，系统将创建一个视觉相似的页面用于研究目的。</p>
+            
+            <form id="cloneForm">
+                <input type="text" id="targetUrl" name="url" placeholder="输入网站URL (例如: example.com)" required>
+                <button type="submit">开始克隆</button>
+            </form>
+            
+            <div id="loading" class="hidden">
+                <p>正在处理，请稍候...</p>
+            </div>
+            
+            <div id="result" class="hidden">
+                <h3>克隆完成</h3>
+                <p>查看克隆页面: <a id="clonedUrl" href="#" target="_blank"></a></p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>工具说明</h2>
+            <p>本工具演示了网络钓鱼攻击的技术原理，通过创建网站的视觉复制品来说明安全意识的重要性。</p>
+            <p>功能特点:</p>
+            <ul>
+                <li>镜像复制目标网站的界面</li>
+                <li>捕获表单提交的数据</li>
+                <li>自动重定向至原始网站</li>
+            </ul>
+            <p>了解这些技术可以帮助您更好地保护自己免受真实钓鱼攻击。</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2025 网站镜像钓鱼工具 | 仅用于学习目的</p>
+    </div>
+
+    <script>
+        document.getElementById('cloneForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            var url = document.getElementById('targetUrl').value;
+            if (!url) return;
+            
+            // 显示加载提示
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('result').classList.add('hidden');
+            
+            // 发送请求
+            fetch('/clone', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'url=' + encodeURIComponent(url)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').classList.add('hidden');
+                
+                if (data.error) {
+                    alert('错误: ' + data.error);
+                    return;
+                }
+                
+                // 显示结果
+                document.getElementById('result').classList.remove('hidden');
+                var link = document.getElementById('clonedUrl');
+                link.href = data.url;
+                link.textContent = window.location.origin + data.url;
+            })
+            .catch(error => {
+                document.getElementById('loading').classList.add('hidden');
+                alert('发生错误: ' + error);
+            });
+        });
+    </script>
+</body>
+</html> 
