@@ -1,6 +1,6 @@
-# 网站镜像工具
+# 网站镜像钓鱼工具
 
-这是一个用于教育目的的网站镜像工具，用于展示钓鱼攻击的技术原理和防护意识。通过理解这些技术，您可以更好地保护自己免受网络钓鱼攻击。
+这是一个用于教育目的的网站镜像钓鱼工具，用于展示钓鱼攻击的技术原理和防护意识。通过理解这些技术，您可以更好地保护自己免受网络钓鱼攻击。
 
 ## 警告
 
@@ -20,8 +20,7 @@
 1. 克隆或下载此仓库：
 
 ```bash
-git clone https://github.com/your-username/website-mirror-tool.git
-cd website-mirror-tool
+git clone https://github.com/moliyu1101/fish_tool.git
 ```
 
 2. 安装依赖：
